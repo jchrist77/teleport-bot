@@ -43,25 +43,20 @@ const askForCode = () => {
 // First you will receive a code via SMS or Telegram, which you have to enter directly in the command line.
 // If you entered the correct code, you will be logged in and the credentials are saved.
 const login = async (client, phone) => {
-  try {
-    const { phone_code_hash } = await client('auth.sendCode', {
-      phone_number: phone.num,
-      current_number: false,
-      api_id,
-      api_hash
-    });
-    const phone_code = await askForCode();
-    console.log(`Your code: ${phone_code}`);
-    const { user } = await client('auth.signIn', {
-      phone_number: phone.num,
-      phone_code_hash: phone_code_hash,
-      phone_code: phone.code
-    });
-    console.log('Signed in as:', user);
-    return user;
-  } catch (error) {
-    console.error(error);
-  }
+  const { phone_code_hash } = await client('auth.sendCode', {
+    phone_number: phone.num,
+    current_number: false,
+    api_id,
+    api_hash
+  });
+  const phone_code = await askForCode();
+  console.log(`Your code: ${phone_code}`);
+  const { user } = await client('auth.signIn', {
+    phone_number: phone.num,
+    phone_code_hash: phone_code_hash,
+    phone_code: phone.code
+  });
+  console.log('Signed in as:', user);
 };
 
 const getDialogs = async () => {
@@ -76,8 +71,8 @@ const getDialogs = async () => {
 (async function() {
   if (!(await app.storage.get('signedin'))) {
     console.log('Not signed in');
-    const user = await login(client, phone).catch(console.error);
-    console.log('Signed in successfully as user:', user.username);
+    await login(client, phone).catch(console.error);
+    console.log('Signed in successfully');
     app.storage.set('signedin', true);
   } else {
     console.log('Already signed in');
