@@ -20,33 +20,13 @@ const api = {
   api_id
 };
 
-const server = { dev };
+const server = { webogram: true, dev };
 const storage = new Storage('./session.json');
 const app = { storage };
 
 const client = MTProto({ server, api, app });
 
-/*
-async function connect() {
-  const { phone_code_hash } = await client('auth.sendCode', {
-    phone_number: phone.num,
-    current_number: false,
-    api_id,
-    api_hash
-  });
-  const { user } = await client('auth.signIn', {
-    phone_number: phone.num,
-    phone_code_hash: phone_code_hash,
-    phone_code: phone.code
-  });
-  console.log('signed as ', user);
-}
-
-connect();
-*/
-
-// This function will stop execution of the program until you enter the code
-// that is sent via SMS or Telegram.
+// This function will stop execution of the program until you enter the code that is sent via SMS or Telegram.
 const askForCode = () => {
   return new Promise(resolve => {
     const rl = readline.createInterface({
@@ -60,24 +40,28 @@ const askForCode = () => {
   });
 };
 
-// First you will receive a code via SMS or Telegram, which you have to enter
-// directly in the command line. If you entered the correct code, you will be
-// logged in and the credentials are saved.
+// First you will receive a code via SMS or Telegram, which you have to enter directly in the command line.
+// If you entered the correct code, you will be logged in and the credentials are saved.
 const login = async (client, phone) => {
-  const { phone_code_hash } = await client('auth.sendCode', {
-    phone_number: phone.num,
-    current_number: false,
-    api_id,
-    api_hash
-  });
-  const phone_code = await askForCode();
-  console.log(`Your code: ${phone_code}`);
-  const { user } = await client('auth.signIn', {
-    phone_number: phone.num,
-    phone_code_hash: phone_code_hash,
-    phone_code: phone.code
-  });
-  console.log('Connected as:', user);
+  try {
+    const { phone_code_hash } = await client('auth.sendCode', {
+      phone_number: phone.num,
+      current_number: false,
+      api_id,
+      api_hash
+    });
+    const phone_code = await askForCode();
+    console.log(`Your code: ${phone_code}`);
+    const { user } = await client('auth.signIn', {
+      phone_number: phone.num,
+      phone_code_hash: phone_code_hash,
+      phone_code: phone.code
+    });
+    console.log('Signed in as:', user);
+    return user;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const getDialogs = async () => {
@@ -92,11 +76,11 @@ const getDialogs = async () => {
 (async function() {
   if (!(await app.storage.get('signedin'))) {
     console.log('Not signed in');
-    await login(client, phone).catch(console.error);
-    console.log('Signed in successfully');
+    const user = await login(client, phone).catch(console.error);
+    console.log('Signed in successfully as user:', user.username);
     app.storage.set('signedin', true);
   } else {
     console.log('Already signed in');
   }
-  getDialogs();
+  await getDialogs();
 })();
