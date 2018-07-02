@@ -1,0 +1,10 @@
+{
+  "telegram": {
+    "token": "???",
+    "chat": { "id": "???" }
+  },
+  "discord": {
+    "token": "???",
+    "chat": { "id": "???" }
+  }
+}
